@@ -1,4 +1,4 @@
--- Bloom Kind: plants, events, watering rules with RLS
+-- Garden Buddy: plants, events, watering rules with RLS
 
 create table if not exists public.plants (
   id uuid primary key default gen_random_uuid(),

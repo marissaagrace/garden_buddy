@@ -2,15 +2,15 @@
 
 @theme {
   --font-sans: 'Nunito', ui-rounded, system-ui, sans-serif;
-  --color-ac-cream: #fef9f3;
-  --color-ac-panel: #fffdf8;
+  --color-ac-cream: #faf3e8;
+  --color-ac-panel: #fdf7ed;
   --color-ac-ink: #3d3a36;
-  --color-ac-muted: #6b6560;
-  --color-ac-sky: #e3f2fd;
-  --color-ac-mint: #c8e6c9;
-  --color-ac-leaf: #81c784;
-  --color-ac-leaf-light: #dcedc8;
-  --color-ac-leaf-dark: #558b2f;
+  --color-ac-muted: #7a6e64;
+  --color-ac-sky: #f5e0d4;
+  --color-ac-mint: #c5d4be;
+  --color-ac-leaf: #7d9b76;
+  --color-ac-leaf-light: #dce8d9;
+  --color-ac-leaf-dark: #4a7c59;
   --shadow-ac-soft: 0 8px 24px rgba(61, 58, 54, 0.08), 0 2px 8px rgba(61, 58, 54, 0.06);
   --radius-ac-lg: 1rem;
   --radius-ac-xl: 1.25rem;

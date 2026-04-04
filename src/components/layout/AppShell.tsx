@@ -35,8 +35,8 @@ export function AppShell() {
                 <Leaf className="h-6 w-6" aria-hidden />
               </span>
               <div className="text-left">
-                <p className="text-ac-ink text-lg font-bold leading-tight">Bloom Kind</p>
-                <p className="text-ac-muted text-xs">Your cozy garden journal</p>
+                <p className="text-ac-ink text-lg font-bold leading-tight">Garden Buddy</p>
+                <p className="text-ac-muted text-xs">Your garden journal</p>
               </div>
             </div>
             <Button type="button" variant="ghost" className="gap-2 text-sm" onClick={() => signOut()}>

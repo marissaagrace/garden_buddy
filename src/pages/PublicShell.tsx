@@ -19,9 +19,9 @@ export function PublicShell() {
             <span className="rounded-ac-xl border-ac-leaf-dark/25 inline-flex h-12 w-12 items-center justify-center border-2 bg-white/70 text-ac-leaf-dark shadow-ac-soft">
               <Leaf className="h-7 w-7" />
             </span>
-            <span className="text-ac-ink text-xl font-bold">Bloom Kind</span>
+            <span className="text-ac-ink text-xl font-bold">Garden Buddy</span>
           </Link>
-          <p className="text-ac-muted mt-2 text-sm">Welcome back to your island garden.</p>
+          <p className="text-ac-muted mt-2 text-sm">Welcome back to your garden.</p>
         </motion.header>
         <ConfigBanner />
         <Outlet />

@@ -65,7 +65,7 @@ export function SignUp() {
     >
       <Card>
         <h1 className="text-ac-ink mb-1 text-xl font-bold">Create account</h1>
-        <p className="text-ac-muted mb-4 text-sm">Start logging plants and cozy watering days.</p>
+        <p className="text-ac-muted mb-4 text-sm">Start growing your plant journal today.</p>
         <form onSubmit={onSubmit} className="flex flex-col gap-3 text-left">
           <label className="flex flex-col gap-1 text-sm font-semibold">
             Email
