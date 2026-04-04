@@ -3,6 +3,7 @@ import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { getAuthRedirectOrigin } from '@/lib/authRedirect'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 import { useAuth } from '@/providers/AuthProvider'
 
@@ -14,6 +15,7 @@ export function SignUp() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [info, setInfo] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
   if (!loading && session && isSupabaseConfigured) {
@@ -23,6 +25,7 @@ export function SignUp() {
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
+    setInfo(null)
     if (!isSupabaseConfigured) {
       setError('Add Supabase credentials to your .env file first.')
       return
@@ -32,10 +35,26 @@ export function SignUp() {
       return
     }
     setBusy(true)
-    const { error: err } = await supabase.auth.signUp({ email, password })
+    const origin = getAuthRedirectOrigin()
+    const { data, error: err } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: origin ? `${origin}/` : undefined,
+      },
+    })
     setBusy(false)
-    if (err) setError(err.message)
-    else navigate('/', { replace: true })
+    if (err) {
+      setError(err.message)
+      return
+    }
+    if (data.session) {
+      navigate('/', { replace: true })
+      return
+    }
+    setInfo(
+      'Check your email to confirm your account. To skip this step, turn off email confirmation in the Supabase dashboard (Authentication → Providers → Email).',
+    )
   }
 
   return (
@@ -74,6 +93,11 @@ export function SignUp() {
           {error && (
             <p className="text-sm font-medium text-red-700" role="alert">
               {error}
+            </p>
+          )}
+          {info && (
+            <p className="text-ac-leaf-dark text-sm font-medium" role="status">
+              {info}
             </p>
           )}
           <Button type="submit" disabled={busy} className="mt-1 w-full">

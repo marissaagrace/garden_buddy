@@ -9,6 +9,8 @@ interface ImportMetaEnv {
   readonly VITE_SUPABASE_PUBLISHABLE_KEY?: string
   /** Alias matching Supabase dashboard naming. */
   readonly VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY?: string
+  /** Optional. Public site origin for auth email redirects (e.g. https://your-app.vercel.app). Defaults to window.location.origin. */
+  readonly VITE_SITE_URL?: string
 }
 
 interface ImportMeta {
