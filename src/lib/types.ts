@@ -50,3 +50,16 @@ export const EVENT_TYPES = [
   'note',
   'lifecycle',
 ] as const
+
+export const MILESTONE_TYPES = [
+  'Seeded',
+  'Sprouted',
+  'Transplanted',
+  'First Bud',
+  'First Bloom',
+  'Harvested',
+  'Dormant',
+  'Other',
+] as const
+
+export type MilestoneType = (typeof MILESTONE_TYPES)[number]

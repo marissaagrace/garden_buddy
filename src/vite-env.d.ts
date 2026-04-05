@@ -11,6 +11,10 @@ interface ImportMetaEnv {
   readonly VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY?: string
   /** Optional. Public site origin for auth email redirects (e.g. https://your-app.vercel.app). Defaults to window.location.origin. */
   readonly VITE_SITE_URL?: string
+  /** Perenual plant API key for species search/autocomplete. */
+  readonly VITE_PERENUAL_API_KEY?: string
+  /** OpenWeather API key for the dashboard weather widget. */
+  readonly VITE_OPENWEATHER_API_KEY?: string
 }
 
 interface ImportMeta {

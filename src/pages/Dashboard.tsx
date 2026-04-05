@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Droplets } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
+import { WeatherWidget } from '@/components/WeatherWidget'
 import { formatDate, formatDateTime } from '@/lib/dates'
 import { supabase } from '@/lib/supabase'
 import type { PlantEventRow, PlantRow, WateringRuleRow } from '@/lib/types'
@@ -105,6 +106,8 @@ export function Dashboard() {
           {err}
         </p>
       )}
+
+      <WeatherWidget />
 
       <section aria-labelledby="due-heading">
         <h2 id="due-heading" className="text-ac-ink mb-3 flex items-center gap-2 text-lg font-bold">
