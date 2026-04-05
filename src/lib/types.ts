@@ -63,3 +63,23 @@ export const MILESTONE_TYPES = [
 ] as const
 
 export type MilestoneType = (typeof MILESTONE_TYPES)[number]
+
+export type FertilizingRuleRow = {
+  id: string
+  user_id: string
+  plant_id: string
+  interval_days: number | null
+  next_due_at: string | null
+  created_at: string
+}
+
+export const FERTILIZER_SUGGESTIONS = [
+  'Balanced 10-10-10',
+  'Liquid seaweed',
+  'Fish emulsion',
+  'Slow-release granules',
+  'Compost tea',
+  'Bone meal',
+  'Worm castings',
+  'Tomato feed',
+] as const

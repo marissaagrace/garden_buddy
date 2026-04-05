@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
-import { Camera, Droplets, Pencil, Trash2, X } from 'lucide-react'
+import { Camera, Droplets, Pencil, Sprout, Trash2, X } from 'lucide-react'
 import { CelebrateBurst } from '@/components/rewards/CelebrateBurst'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -9,7 +9,9 @@ import { addDays, formatDate, formatDateTime } from '@/lib/dates'
 import { supabase } from '@/lib/supabase'
 import {
   EVENT_TYPES,
+  FERTILIZER_SUGGESTIONS,
   MILESTONE_TYPES,
+  type FertilizingRuleRow,
   type PlantEventRow,
   type PlantRow,
   type WateringRuleRow,
@@ -116,13 +118,25 @@ export function PlantDetail() {
   // photo lightbox
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
 
+  // fertilizing
+  const [fertRule, setFertRule] = useState<FertilizingRuleRow | null>(null)
+  const [showFertForm, setShowFertForm] = useState(false)
+  const [fertType, setFertType] = useState('')
+  const [fertInterval, setFertInterval] = useState(30)
+  const [fertErr, setFertErr] = useState<string | null>(null)
+
   // ── data loading ────────────────────────────────────────────────────────────
 
   const load = useCallback(async () => {
     if (!id || !user) return
     setLoading(true)
     setErr(null)
-    const [{ data: p, error: pErr }, { data: r }, { data: ev, error: eErr }] = await Promise.all([
+    const [
+      { data: p, error: pErr },
+      { data: r },
+      { data: ev, error: eErr },
+      { data: fr },
+    ] = await Promise.all([
       supabase.from('plants').select('*').eq('id', id).single(),
       supabase.from('watering_rules').select('*').eq('plant_id', id).maybeSingle(),
       supabase
@@ -130,6 +144,7 @@ export function PlantDetail() {
         .select('*')
         .eq('plant_id', id)
         .order('occurred_at', { ascending: false }),
+      supabase.from('fertilizing_rules').select('*').eq('plant_id', id).maybeSingle(),
     ])
     if (pErr || !p) {
       setErr(pErr?.message ?? 'Not found')
@@ -141,6 +156,7 @@ export function PlantDetail() {
     const plantRow = p as PlantRow
     setPlant(plantRow)
     setRule(r as WateringRuleRow | null)
+    setFertRule(fr as FertilizingRuleRow | null)
     setEvents(ev ?? [])
     // Only sync notes text when the user isn't actively editing it.
     if (!editingNotesRef.current) setNotesText(plantRow.notes ?? '')
@@ -202,6 +218,49 @@ export function PlantDetail() {
 
     setCelebrate(true)
     window.setTimeout(() => setCelebrate(false), 650)
+    await load()
+    setBusy(false)
+  }
+
+  async function logFertilize(e: { preventDefault(): void }) {
+    e.preventDefault()
+    if (!user || !id) return
+    setBusy(true)
+    setFertErr(null)
+    const interval = fertInterval > 0 ? fertInterval : 30
+    const nextDue = addDays(new Date(), interval).toISOString()
+    const payload: Record<string, unknown> = {}
+    if (fertType.trim()) payload.fertilizer_type = fertType.trim()
+
+    const { error: evErr } = await supabase.from('plant_events').insert({
+      user_id: user.id,
+      plant_id: id,
+      type: 'fertilized',
+      occurred_at: new Date().toISOString(),
+      payload,
+    })
+    if (evErr) {
+      setFertErr(evErr.message)
+      setBusy(false)
+      return
+    }
+
+    if (fertRule?.id) {
+      await supabase
+        .from('fertilizing_rules')
+        .update({ interval_days: interval, next_due_at: nextDue })
+        .eq('id', fertRule.id)
+    } else {
+      await supabase.from('fertilizing_rules').insert({
+        user_id: user.id,
+        plant_id: id,
+        interval_days: interval,
+        next_due_at: nextDue,
+      })
+    }
+
+    setShowFertForm(false)
+    setFertType('')
     await load()
     setBusy(false)
   }
@@ -478,6 +537,104 @@ export function PlantDetail() {
           {busy ? 'Logging…' : 'Log watering'}
         </Button>
       </Card>
+
+      {/* ── Fertilizing ── */}
+      {(() => {
+        const lastFertEvent = events.find((ev) => ev.type === 'fertilized')
+        const lastFertAt = lastFertEvent?.occurred_at ?? null
+        const lastFertType =
+          typeof lastFertEvent?.payload?.fertilizer_type === 'string'
+            ? lastFertEvent.payload.fertilizer_type
+            : null
+        const nextFertDue = fertRule?.next_due_at ?? null
+        return (
+          <Card>
+            <h2 className="text-ac-ink mb-2 flex items-center gap-2 text-lg font-bold">
+              <Sprout className="h-5 w-5 text-ac-leaf" aria-hidden />
+              Fertilizing
+            </h2>
+            <p className="text-ac-muted text-sm">
+              Last fertilized: {lastFertAt ? formatDateTime(lastFertAt) : '—'}
+            </p>
+            {lastFertType && (
+              <p className="text-ac-muted text-sm">Fertilizer: {lastFertType}</p>
+            )}
+            <p className="text-ac-muted text-sm">
+              Next due:{' '}
+              {nextFertDue ? formatDateTime(nextFertDue) : fertRule ? '—' : 'Log to start tracking'}
+            </p>
+            {fertRule?.interval_days != null && (
+              <p className="text-ac-muted mt-1 text-xs">Every {fertRule.interval_days} days</p>
+            )}
+            {!showFertForm ? (
+              <Button
+                type="button"
+                className="mt-3 gap-2"
+                onClick={() => {
+                  setFertInterval(fertRule?.interval_days ?? 30)
+                  setFertType('')
+                  setFertErr(null)
+                  setShowFertForm(true)
+                }}
+              >
+                <Sprout className="h-4 w-4" />
+                Log fertilizing
+              </Button>
+            ) : (
+              <form onSubmit={logFertilize} className="mt-3 flex flex-col gap-2">
+                <label className="flex flex-col gap-1 text-sm font-semibold">
+                  Fertilizer type{' '}
+                  <span className="text-ac-muted font-normal">(optional)</span>
+                  <input
+                    list="fert-suggestions"
+                    className={`${inputCls} text-sm`}
+                    value={fertType}
+                    onChange={(e) => setFertType(e.target.value)}
+                    placeholder="e.g. balanced 10-10-10, liquid seaweed…"
+                  />
+                  <datalist id="fert-suggestions">
+                    {FERTILIZER_SUGGESTIONS.map((s) => (
+                      <option key={s} value={s} />
+                    ))}
+                  </datalist>
+                </label>
+                <label className="flex flex-col gap-1 text-sm font-semibold">
+                  Remind me every
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min={1}
+                      max={365}
+                      className={`${inputCls} w-24 text-sm`}
+                      value={fertInterval}
+                      onChange={(e) => setFertInterval(Number(e.target.value))}
+                    />
+                    <span className="text-ac-muted text-sm font-normal">days</span>
+                  </div>
+                </label>
+                {fertErr && (
+                  <p className="text-sm font-medium text-red-700" role="alert">
+                    {fertErr}
+                  </p>
+                )}
+                <div className="flex gap-2">
+                  <Button type="submit" disabled={busy}>
+                    {busy ? 'Saving…' : 'Log fertilizing'}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setShowFertForm(false)}
+                    disabled={busy}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            )}
+          </Card>
+        )
+      })()}
 
       {/* ── Log something (existing quick-log) ── */}
       <Card>
